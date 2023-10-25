@@ -1,4 +1,4 @@
-package com.example.androidapplication.domain.entity
+package com.example.androidapplication.data.dto
 
 data class AccelerometerDTO(
     val x: String,
