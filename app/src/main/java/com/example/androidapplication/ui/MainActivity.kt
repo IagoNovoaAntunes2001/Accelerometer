@@ -6,21 +6,25 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import com.example.androidapplication.data.MainRepository
-import com.example.androidapplication.data.RetrofitService
 import com.example.androidapplication.databinding.ActivityMainBinding
-import com.example.androidapplication.ui.viewModel.MainViewModel
-import com.example.androidapplication.ui.viewModel.MyViewModelFactory
+import com.example.androidapplication.ui.viewModel.AccelerometerViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), SensorEventListener {
+    companion object {
+        private const val ZERO = 0
+        private const val ONE = 1
+        private const val TWO = 2
+    }
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var mSensorManager: SensorManager
     private var isAvailable = false
-    private lateinit var viewModel: MainViewModel
+
+    private val viewModel: AccelerometerViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,27 +32,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         setContentView(binding.root)
 
         configManager()
-        configInstances()
         setupClickListeners()
         setupObservers()
     }
 
-    private fun configInstances() {
-        val retrofitService = RetrofitService.getInstance()
-        val mainRepository = MainRepository(retrofitService)
-        viewModel = ViewModelProvider(
-            this,
-            MyViewModelFactory(mainRepository)
-        )[MainViewModel::class.java]
-    }
-
     private fun setupClickListeners() {
         binding.buttonStart.setOnClickListener {
-            binding.buttonStart.text = if (isAvailable) {
-                "start"
-            } else {
-                "stop"
-            }
+            binding.buttonStart.text = getString(viewModel.getButtonStartText(isAvailable))
             isAvailable = !isAvailable
         }
     }
@@ -74,20 +64,26 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
-            if (isAvailable) {
-                val x = event.values[0]
-                binding.textX.text = x.toString()
+        isTypeAccelerometer(event)
+    }
 
-                val y = event.values[1]
-                binding.textY.text = y.toString()
-
-                val xy = event.values[2]
-                binding.textXY.text = xy.toString()
-
-                viewModel.sendAccelerometer(x.toString(), y.toString(), xy.toString())
-            }
+    private fun isTypeAccelerometer(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) when {
+            isAvailable -> setupAvailable(event)
         }
+    }
+
+    private fun setupAvailable(event: SensorEvent) {
+        val x = event.values[ZERO]
+        binding.textX.text = x.toString()
+
+        val y = event.values[ONE]
+        binding.textY.text = y.toString()
+
+        val xy = event.values[TWO]
+        binding.textXY.text = xy.toString()
+
+        viewModel.sendAccelerometer(x.toString(), y.toString(), xy.toString())
     }
 
     override fun onDestroy() {
