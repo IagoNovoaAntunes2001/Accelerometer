@@ -6,13 +6,12 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.example.androidapplication.R
 import com.example.androidapplication.databinding.ActivityMainBinding
 import com.example.androidapplication.ui.viewModel.AccelerometerViewModel
-import dagger.hilt.android.AndroidEntryPoint
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), SensorEventListener {
     companion object {
         private const val ZERO = 0
@@ -22,10 +21,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var mSensorManager: SensorManager
-    private var isAvailable = false
-
-    private val viewModel: AccelerometerViewModel by viewModels()
-
+    private val viewModel: AccelerometerViewModel by viewModel()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -37,9 +33,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun setupClickListeners() {
+        binding.buttonStart.text = getString(R.string.title_start)
         binding.buttonStart.setOnClickListener {
-            binding.buttonStart.text = getString(viewModel.getButtonStartText(isAvailable))
-            isAvailable = !isAvailable
+            viewModel.setIsAvailable()
+            binding.buttonStart.text = getString(viewModel.getButtonStartText())
         }
     }
 
@@ -68,8 +65,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun isTypeAccelerometer(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) when {
-            isAvailable -> setupAvailable(event)
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) when (viewModel.isAvailable.value) {
+            true -> setupAvailable(event)
+            else -> {}
         }
     }
 
