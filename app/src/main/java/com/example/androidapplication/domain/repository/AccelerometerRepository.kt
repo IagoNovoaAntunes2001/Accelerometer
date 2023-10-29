@@ -1,4 +1,4 @@
-package com.example.androidapplication.domain
+package com.example.androidapplication.domain.repository
 
 import com.example.androidapplication.data.dto.AccelerometerResponseDTO
 import retrofit2.Response
