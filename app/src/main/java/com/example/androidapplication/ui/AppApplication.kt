@@ -1,7 +1,14 @@
 package com.example.androidapplication.ui
 
 import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import com.example.androidapplication.di.appModules
+import org.koin.core.context.startKoin
 
-@HiltAndroidApp
-class AppApplication : Application()
+class AppApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        startKoin {
+            modules(appModules)
+        }
+    }
+}

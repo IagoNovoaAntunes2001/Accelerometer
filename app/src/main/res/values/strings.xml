@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AndroidApplication</string>
+    <string name="app_name">Accelerometer</string>
     <string name="title_start">start</string>
     <string name="title_top">stop</string>
 </resources>
